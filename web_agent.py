@@ -1,7 +1,26 @@
+__import__('pysqlite3')
+import sys
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+
+
 import streamlit as st
 import os
 import time
 from dotenv import load_dotenv
+
+# 优先读取 Streamlit 的云端加密设置，如果没有（即本地运行），则读取 .env
+if "DEEPSEEK_API_KEY" in st.secrets:
+    deepseek_api_key = st.secrets["DEEPSEEK_API_KEY"]
+else:
+    load_dotenv()
+    deepseek_api_key = os.getenv("DEEPSEEK_API_KEY")
+
+# 检查 Key 是否存在
+if not deepseek_api_key:
+    st.error("未找到 API Key，请在 Secrets 或 .env 中配置。")
+    st.stop()
+
+
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain_openai import ChatOpenAI
